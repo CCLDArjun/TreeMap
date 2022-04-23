@@ -10,6 +10,7 @@ int main(int argc, const char *argv[]) {
 
 void test() {
     TreeMap *map = malloc(sizeof(TreeMap));
+    map->head = NULL;
 
     Node *n = TM_set(map, 6, 7);
     Node *e = TM_set(map, 10, 9);
@@ -28,6 +29,12 @@ void test() {
     TreeMapVal ret = TM_delete(map, 10);
     assert(ret.val == 5);
     assert(map->head->right == NULL);
+
+//    Node *f = TM_set(map, 1, 2);
+//    Node *g = TM_set(map, 2, 3);
+//    Node *h = TM_set(map, 3, 4);
+//    Node *i = TM_set(map, 4, 5);
+//    Node *j = TM_set(map, 5, 6);
 
     printf("tests passed!!\n");
     TM_free(map);

@@ -21,10 +21,14 @@ static TreeMapVal TM_del(Node **curr, long key, Node **to_delete);
 
 TreeMapVal TM_delete(TreeMap *op, long key) {
     Node **to_delete;
-
     to_delete = malloc (sizeof(Node**));
-    *to_delete = malloc (sizeof(Node*));
-    return TM_del(&op->head, key, to_delete);
+    //*to_delete = malloc (sizeof(Node*));
+
+    TreeMapVal ret = TM_del(&op->head, key, to_delete);
+    
+    //free(*to_delete);
+    free(to_delete);
+    return ret;
 }
 
 Node *find_leftmost(Node *curr) {
@@ -39,26 +43,30 @@ Node *find_leftmost(Node *curr) {
 static TreeMapVal handle_del(Node **to_delete, Node *parent) {
     assert(*to_delete != parent);
     assert((*to_delete)->right != *to_delete);
+    assert(*to_delete == parent->left || *to_delete == parent->right);
 
-    TreeMapVal ret = {0,(*to_delete)->value};
+    TreeMapVal ret = {NoErr,(*to_delete)->value};
+    Node *replacement = find_leftmost(*to_delete);
+
+    if (replacement == *to_delete) { // has no leftnodes
+        replacement = (*to_delete)->right;
+    }
+    else {
+        replacement->right = (*to_delete)->right;
+    }
 
     if (parent->left == *to_delete) {
-        parent->left = find_leftmost(*to_delete);
-        if (parent->left == *to_delete) {
-            parent->left = (*to_delete)->right;
-        }
-    } // for some reason, to_delete->right is being set to itself.
-    else if (parent->right == *to_delete) {
-        parent->right = find_leftmost(*to_delete);
-        if (parent->right == *to_delete) {
-            parent->right = (*to_delete)->right;
-        }
+        parent->left = replacement;
     }
+    else {
+        parent->right = replacement;
+    }
+
 
     assert((*to_delete)->right != *to_delete);
     assert(*to_delete != parent);
-
     free(*to_delete);
+
     return ret;
 }
 
@@ -81,7 +89,7 @@ static TreeMapVal TM_del(Node **curr, long key, Node **to_delete) {
         ret = TM_del(&((*curr)->left), key, to_delete);
     }
 
-    if (*to_delete != NULL) {
+    if (*to_delete != NULL && ret.err != NoErr) {
         ret = handle_del(to_delete, *curr);
         *to_delete = NULL;
     }
@@ -113,6 +121,10 @@ TreeMapVal TM_get(TreeMap *op, long key) {
     else
         ret.val = (*found)->value;
     return ret;
+}
+
+Node TM_create(TreeMap *op) {
+    
 }
 
 static Node **TM_find(Node **curr, long key, TreeMap *tr) {
